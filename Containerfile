@@ -131,8 +131,10 @@ RUN mkdir -p /usr/local/bin && \
 
 RUN printf '[Unit]\nDescription=Initialize Persistent Home Directory structure for Elemental\nDefaultDependencies=no\nAfter=run-elemental-persistent.mount\nBefore=local-fs.target home.mount\n\n[Service]\nType=oneshot\nExecStart=/usr/local/bin/init-persistent-home.sh\nRemainAfterExit=yes\n\n[Install]\nWantedBy=local-fs.target\n' > /etc/systemd/system/init-persistent-home.service
 
-RUN systemctl enable init-persistent-home.service && \
-    printf '/run/elemental/persistent/home /home none bind,x-systemd.requires-mounts-for=/run/elemental/persistent 0 0\n/run/elemental/persistent/root /root none bind,x-systemd.requires-mounts-for=/run/elemental/persistent 0 0\n' >> /etc/fstab
+RUN systemctl enable init-persistent-home.service
+
+# RUN systemctl enable init-persistent-home.service && \
+#     printf '/run/elemental/persistent/home /home none bind,x-systemd.requires-mounts-for=/run/elemental/persistent 0 0\n/run/elemental/persistent/root /root none bind,x-systemd.requires-mounts-for=/run/elemental/persistent 0 0\n' >> /etc/fstab
 
 # ------------------------------
 # 7. 固化 SDDM 默认显示管理器与系统启动目标软链接
