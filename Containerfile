@@ -105,6 +105,38 @@ zypper clean --all
 COPY --from=toolkit /usr/bin/elemental /usr/bin/elemental
 COPY --from=toolkit /usr/lib/dracut/modules.d/ /usr/lib/dracut/modules.d/
 
+# ------------------------------
+# 1. 基础用户与免密 sudo 配置 (liveuser 与 peter)
+# ------------------------------
+RUN groupadd -f wheel && \
+    useradd -m -G wheel -s /bin/bash liveuser && \
+    echo "liveuser:liveuser" | chpasswd && \
+    useradd -m -G wheel -s /bin/bash peter && \
+    echo "peter:peter" | chpasswd && \
+    echo "root:root" | chpasswd && \
+    echo "%wheel ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
+    echo 'Defaults secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"' >> /etc/sudoers
+
+# ------------------------------
+# 2. 固化 Recovery (8GB) 与 State (自动利用剩余空间) 分区配置
+# ------------------------------
+RUN mkdir -p /etc/elemental && \
+    printf 'install:\n  snapshotter:\n    type: btrfs\n  partitions:\n    recovery:\n      size: 8192\n    state:\n      size: 0\n' > /etc/elemental/config.yaml
+
+# ------------------------------
+# 3. 固化 SDDM 默认显示管理器与系统启动目标软链接
+# ------------------------------
+RUN mkdir -p /etc/sysconfig /etc/systemd/system/graphical.target.wants && \
+    echo 'DISPLAYMANAGER="sddm"' > /etc/sysconfig/displaymanager && \
+    systemctl set-default graphical.target && \
+    ln -sf /usr/lib/systemd/system/sddm.service /etc/systemd/system/display-manager.service && \
+    ln -sf /usr/lib/systemd/system/sddm.service /etc/systemd/system/graphical.target.wants/sddm.service
+
+# ------------------------------
+# 4. 启用 VMware 增强工具服务
+# ------------------------------
+RUN systemctl enable vmtoolsd.service || systemctl enable open-vm-tools.service || true
+
 # 3. 启用系统与桌面服务，准备配置目录与内核链接，执行 Elemental 初始化
 RUN systemctl enable NetworkManager.service || true && \
     systemctl enable sshd.service || true && \
