@@ -2,7 +2,7 @@
 ARG OS_IMAGE=registry.opensuse.org/opensuse/tumbleweed
 ARG OS_VERSION=latest
 
-# 第一阶段：获取官方 elemental-toolkit 完整运行资源
+# 第一阶段：获取官方 elemental-toolkit CLI 与 dracut 模块
 FROM ghcr.io/rancher/elemental-toolkit/elemental-cli:latest AS toolkit
 
 # 第二阶段：构建目标操作系统镜像
@@ -78,19 +78,17 @@ RUN ARCH=$(uname -m); \
         noto-sans-cjk-fonts && \
     zypper clean --all
 
-# 2. 完整注入 elemental 工具及其运行环境（解决 init 找不到 dracut 模块的核心）
+# 2. 注入 elemental 二进制工具及专用的 dracut 模块
 COPY --from=toolkit /usr/bin/elemental /usr/bin/elemental
 COPY --from=toolkit /usr/lib/dracut/modules.d/ /usr/lib/dracut/modules.d/
-COPY --from=toolkit /usr/share/elemental/ /usr/share/elemental/
-COPY --from=toolkit /etc/elemental/ /etc/elemental/
 
-# 3. 启用系统与桌面服务，修补内核软链接，并执行 Elemental 初始化
+# 3. 启用系统与桌面服务，准备配置目录与内核链接，执行 Elemental 初始化
 RUN systemctl enable NetworkManager.service || true && \
     systemctl enable sshd.service || true && \
     systemctl enable sddm.service || true && \
     systemctl set-default graphical.target && \
     systemd-sysusers || true && \
-    mkdir -p /var/tmp /var/log /run/lock /etc/dracut.conf.d && \
+    mkdir -p /var/tmp /var/log /run/lock /etc/dracut.conf.d /etc/elemental && \
     echo 'hostonly="no"' > /etc/dracut.conf.d/02-generic.conf && \
     # 确保 /boot/vmlinuz 软链接存在
     KERNEL_FILE=$(ls -1 /boot/vmlinuz-* 2>/dev/null | grep -v 'rescue' | head -n 1) && \
