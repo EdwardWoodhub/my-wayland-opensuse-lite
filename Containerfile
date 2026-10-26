@@ -126,15 +126,13 @@ RUN groupadd -f wheel && \
     echo "%wheel ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
     echo 'Defaults secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"' >> /etc/sudoers
 
-# ------------------------------
-# 2. 固化 Recovery (8GB) 与 State (自动利用剩余空间) 分区配置
-# ------------------------------
+# ----------------------------------------------------
+# 固化 Elemental 分区配置（persistent 自动吃满剩余空间）与目录持久化规则
+# ----------------------------------------------------
 RUN mkdir -p /etc/elemental && \
-    printf 'install:\n  snapshotter:\n    type: btrfs\n  partitions:\n    recovery:\n      size: 8192\n    state:\n      size: 0\n' > /etc/elemental/config.yaml
-
-# 固化 /home 与 /root 的数据持久化配置
-RUN mkdir -p /etc/elemental && \
+    printf 'install:\n  snapshotter:\n    type: btrfs\n  partitions:\n    recovery:\n      size: 8192\n    state:\n      size: 30720\n    persistent:\n      size: 0\n' > /etc/elemental/config.yaml && \
     printf 'dirs:\n  - /home\n  - /root\n  - /var/lib/containers\n' > /etc/elemental/persistent-dirs.yaml
+
 
 # ------------------------------
 # 3. 固化 SDDM 默认显示管理器与系统启动目标软链接
