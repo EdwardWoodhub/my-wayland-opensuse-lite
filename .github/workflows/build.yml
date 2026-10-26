@@ -161,10 +161,9 @@ jobs:
       - name: Push Image to Aliyun ACR
         if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
         env:
-          REGISTRY: ${{ env.REGISTRY }}
-          IMAGE_NAME: ${{ steps.vars.outputs.image_name }}
-          TARGET_NAME: ${{ env.IMAGE_NAME }}
-          IMAGE_TAG: ${{ steps.vars.outputs.tag }}
+          FULL_IMAGE_NAME: ${{ env.FULL_IMAGE_NAME }}
+          OCI_IMAGE_NAME: ${{ env.OCI_IMAGE_NAME }}
+          RELEASE_TAG: ${{ env.RELEASE_TAG }}
           ACR_REGISTRY: ${{ secrets.ALIYUN_ACR_REGISTRY }}
           ACR_NAMESPACE: ${{ secrets.ALIYUN_ACR_NAMESPACE }}
         run: |
@@ -175,11 +174,15 @@ jobs:
             exit 1
           fi
 
-          GHCR_TAG_IMAGE="${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
-          ALIYUN_TAG_IMAGE="${ACR_REGISTRY}/${ACR_NAMESPACE}/${TARGET_NAME}:${IMAGE_TAG}"
-          ALIYUN_LATEST_IMAGE="${ACR_REGISTRY}/${ACR_NAMESPACE}/${TARGET_NAME}:latest"
+          # 构建完整镜像名
+          GHCR_TAG_IMAGE="${FULL_IMAGE_NAME}:${RELEASE_TAG}"
+          ALIYUN_TAG_IMAGE="${ACR_REGISTRY}/${ACR_NAMESPACE}/${OCI_IMAGE_NAME}:${RELEASE_TAG}"
+          ALIYUN_LATEST_IMAGE="${ACR_REGISTRY}/${ACR_NAMESPACE}/${OCI_IMAGE_NAME}:latest"
 
-          # 如果本地没有该镜像标签（例如多 job 场景），则尝试 pull 一次兜底
+          echo "GHCR Image Source: $GHCR_TAG_IMAGE"
+          echo "Aliyun Target Tag: $ALIYUN_TAG_IMAGE"
+
+          # 如果本地没有该镜像，兜底拉取一次
           if ! docker image inspect "$GHCR_TAG_IMAGE" >/dev/null 2>&1; then
             echo "Local image not found, pulling $GHCR_TAG_IMAGE ..."
             docker pull "$GHCR_TAG_IMAGE"
