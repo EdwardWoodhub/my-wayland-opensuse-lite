@@ -14,7 +14,7 @@ ARG VERSION=latest
 ENV REPO=${REPO}
 ENV VERSION=${VERSION}
 
-# 1. 安装核心引导、内核与系统工具
+# 1. 安装核心引导、内核与 LXQt + labwc 桌面环境
 RUN ARCH=$(uname -m); \
     ADD_PKGS=""; \
     if [ "${ARCH}" != "riscv64" ]; then \
@@ -62,27 +62,25 @@ RUN ARCH=$(uname -m); \
         xterm-resize \
         htop \
         ${ADD_PKGS} \
-        # --- LXQt + labwc 桌面环境与显示管理器 --- \
-        patterns-openSUSE-lxqt \
+        # --- LXQt + labwc 桌面组件 --- \
+        -t pattern lxqt \
         labwc \
         lxqt-session \
         lxqt-wayland-session \
-        lxqt-labwc-session \
         sddm \
         wlr-randr \
         wdisplays \
         wl-clipboard \
         xwayland \
-        # --- 图形驱动底座与基础字体（避免中文字符方块化） --- \
+        # --- 基础渲染驱动与中文矢量字体 --- \
         Mesa \
-        noto-sans-cjk-sc-fonts \
         noto-sans-cjk-fonts && \
     zypper clean --all
 
 # 2. 注入 elemental 工具
 COPY --from=toolkit /usr/bin/elemental /usr/bin/elemental
 
-# 3. 启用服务、设置图形界面启动目标并初始化引导
+# 3. 启用系统与桌面服务，并完成 Elemental 引导初始化
 RUN systemctl enable NetworkManager.service && \
     systemctl enable sshd.service && \
     systemctl enable sddm.service && \
@@ -90,7 +88,7 @@ RUN systemctl enable NetworkManager.service && \
     systemd-sysusers && \
     elemental --debug init --force
 
-# 4. 注入元数据至 /etc/os-release
+# 4. 写入元数据至 /etc/os-release
 RUN echo "IMAGE_REPO=\"${REPO}\"" >> /etc/os-release && \
     echo "IMAGE_TAG=\"${VERSION}\"" >> /etc/os-release && \
     echo "IMAGE=\"${REPO}:${VERSION}\"" >> /etc/os-release && \
