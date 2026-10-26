@@ -132,6 +132,10 @@ RUN groupadd -f wheel && \
 RUN mkdir -p /etc/elemental && \
     printf 'install:\n  snapshotter:\n    type: btrfs\n  partitions:\n    recovery:\n      size: 8192\n    state:\n      size: 0\n' > /etc/elemental/config.yaml
 
+# 固化 /home 与 /root 的数据持久化配置
+RUN mkdir -p /etc/elemental && \
+    printf 'dirs:\n  - /home\n  - /root\n  - /var/lib/containers\n' > /etc/elemental/persistent-dirs.yaml
+
 # ------------------------------
 # 3. 固化 SDDM 默认显示管理器与系统启动目标软链接
 # ------------------------------
