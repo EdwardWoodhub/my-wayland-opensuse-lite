@@ -1,0 +1,67 @@
+name: Build LXQt OS Based On openSUSE and Publish ISO
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 防止 repo 名字包含大写字符导致 docker tag 报错
+      - name: Set Image Name Lowercase
+        run: |
+          echo "IMAGE_NAME=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
+
+      # 1. 构建并推送 OCI 基础镜像到 GHCR
+      - name: Build and push OS Container Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Containerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          build-args: |
+            REPO=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            VERSION=latest
+
+      # 2. 调用 elemental-cli 将刚推送的镜像打包为可引导的 ISO
+      - name: Build Bootable ISO
+        run: |
+          mkdir -p build-output
+          docker run --rm -v $(pwd)/build-output:/build \
+            ghcr.io/rancher/elemental-toolkit/elemental-cli:latest \
+            --debug build-iso \
+            --name elemental-custom \
+            --bootloader-in-rootfs \
+            -o /build \
+            docker:${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+      # 3. 把打包出的 ISO 保存为 Action Artifact，供直接下载
+      - name: Upload ISO Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: elemental-custom-iso
+          path: build-output/*.iso
+          retention-days: 7
