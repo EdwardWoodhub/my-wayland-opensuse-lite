@@ -58,12 +58,14 @@ RUN ARCH=$(uname -m); \
         labwc \
         less \
         lvm2 \
+        lximage-qt \
         lxqt-labwc-session \
         lxqt-session \
         lxqt-wayland-session \
         meld \
         Mesa \
         Mesa-dri \
+        MozillaFirefox \
         mtools \
         NetworkManager \
         noto-sans-cjk-fonts \
@@ -85,6 +87,7 @@ RUN ARCH=$(uname -m); \
         sed \
         slurp \
         snapper \
+        spectacle \
         squashfs \
         sudo \
         swaybg \
