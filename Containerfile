@@ -70,12 +70,14 @@ RUN ARCH=$(uname -m); \
         mtools \
         NetworkManager \
         noto-sans-cjk-fonts \
+        openbox \
         openssh-clients \
         openssh-server \
         open-vm-tools \
         open-vm-tools-desktop \
         parted \
         patterns-lxqt-lxqt \
+        pcmanfm-qt \
         podman \
         python3 \
         qt6-wayland \
@@ -88,6 +90,7 @@ RUN ARCH=$(uname -m); \
         snapper \
         squashfs \
         sudo \
+        swaybg \
         syncthing \
         systemd \
         tar \
