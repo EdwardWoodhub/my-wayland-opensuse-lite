@@ -76,7 +76,6 @@ RUN ARCH=$(uname -m); \
         open-vm-tools-desktop \
         parted \
         patterns-lxqt-lxqt \
-        patterns-microos-selinux \
         podman \
         python3 \
         qt6-wayland \
