@@ -1,4 +1,4 @@
-name: Build LXQt OS Based On openSUSE and Publish ISO
+name: Build Elemental OS Image and ISO
 
 on:
   push:
@@ -7,6 +7,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
+  OCI_IMAGE_NAME: my-wayland-opensuse-lite-vm
+  ISO_NAME: my-wayland-opensuse-lite-iso
 
 jobs:
   build:
@@ -29,39 +31,40 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 防止 repo 名字包含大写字符导致 docker tag 报错
-      - name: Set Image Name Lowercase
+      # 用户名转小写以避免 GHCR 命名规范校验失败
+      - name: Resolve Full Image Name
         run: |
-          echo "IMAGE_NAME=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
+          ACTOR_LOWER=$(echo "${{ github.actor }}" | tr '[:upper:]' '[:lower:]')
+          echo "FULL_IMAGE_NAME=${{ env.REGISTRY }}/${ACTOR_LOWER}/${{ env.OCI_IMAGE_NAME }}" >> $GITHUB_ENV
 
-      # 1. 构建并推送 OCI 基础镜像到 GHCR
+      # 1. 构建并推送 OCI 操作系统镜像
       - name: Build and push OS Container Image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Containerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          tags: ${{ env.FULL_IMAGE_NAME }}:latest
           build-args: |
-            REPO=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            REPO=${{ env.FULL_IMAGE_NAME }}
             VERSION=latest
 
-      # 2. 调用 elemental-cli 将刚推送的镜像打包为可引导的 ISO
+      # 2. 调用 elemental-cli 将刚推送的镜像打包为可引导 ISO
       - name: Build Bootable ISO
         run: |
           mkdir -p build-output
           docker run --rm -v $(pwd)/build-output:/build \
             ghcr.io/rancher/elemental-toolkit/elemental-cli:latest \
             --debug build-iso \
-            --name elemental-custom \
+            --name ${{ env.ISO_NAME }} \
             --bootloader-in-rootfs \
             -o /build \
-            docker:${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            docker:${{ env.FULL_IMAGE_NAME }}:latest
 
-      # 3. 把打包出的 ISO 保存为 Action Artifact，供直接下载
+      # 3. 保存生成的 ISO 安装介质
       - name: Upload ISO Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: elemental-custom-iso
-          path: build-output/*.iso
+          name: ${{ env.ISO_NAME }}
+          path: build-output/${{ env.ISO_NAME }}.iso
           retention-days: 7
