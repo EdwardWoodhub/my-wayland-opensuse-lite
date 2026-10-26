@@ -3,6 +3,11 @@ name: Build LXQt OS Based On openSUSE and Publish ISO
 on:
   push:
     branches: [ "main" ]
+    paths-ignore:
+      - '**.md'              # 忽略仓库内所有目录下的 Markdown 文件修改
+      - 'LICENSE'            # 忽略开源协议文件变更
+      - '.gitignore'         # 忽略 gitignore 修改
+      - 'docs/**'            # 忽略纯文档目录
   schedule:
     # 每天 UTC 19:03 (北京时间次日凌晨 3:03) 定时触发
     - cron: '03 19 * * *'
