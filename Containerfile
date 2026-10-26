@@ -14,6 +14,14 @@ ARG VERSION=latest
 ENV REPO=${REPO}
 ENV VERSION=${VERSION}
 
+# 2. 补充 openSUSE Leap 16.0 官方与 M17N 字体社区源
+RUN zypper --non-interactive ar -cf -p 90 https://download.opensuse.org/distribution/leap/16.0/repo/oss/ oss || true && \
+    zypper --non-interactive ar -cf -p 90 https://download.opensuse.org/distribution/leap/16.0/repo/non-oss/ non-oss || true && \
+    zypper --non-interactive ar -cf -p 90 https://download.opensuse.org/repositories/M17N:/fonts/16.0/ M17N-fonts || true
+
+# 3. 自动信任导入 GPG 密钥并刷新源缓存
+RUN zypper --non-interactive --gpg-auto-import-keys refresh
+
 # 1. 安装核心引导、内核、驱动、中文字体与 LXQt + labwc 桌面环境
 RUN ARCH=$(uname -m); \
     ADD_PKGS=""; \
