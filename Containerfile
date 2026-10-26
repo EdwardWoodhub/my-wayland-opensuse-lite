@@ -62,8 +62,8 @@ RUN ARCH=$(uname -m); \
         xterm-resize \
         htop \
         ${ADD_PKGS} \
-        # --- LXQt + labwc 桌面组件 --- \
-        -t pattern lxqt \
+        # --- LXQt + labwc 桌面套件（全用标准 RPM 包名） --- \
+        patterns-lxqt-lxqt \
         labwc \
         lxqt-session \
         lxqt-wayland-session \
@@ -72,10 +72,12 @@ RUN ARCH=$(uname -m); \
         wdisplays \
         wl-clipboard \
         xwayland \
-        # --- 基础渲染驱动与中文矢量字体 --- \
+        # --- 图形驱动与字体 --- \
         Mesa \
+        Mesa-dri \
         noto-sans-cjk-fonts && \
     zypper clean --all
+
 
 # 2. 注入 elemental 工具
 COPY --from=toolkit /usr/bin/elemental /usr/bin/elemental
