@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
-ARG OS_IMAGE=registry.opensuse.org/opensuse/tumbleweed
-ARG OS_VERSION=latest
+ARG OS_IMAGE=registry.opensuse.org/opensuse/leap
+ARG OS_VERSION=16.0
 
 # 第一阶段：获取官方 elemental-toolkit CLI 与 dracut 模块
 FROM ghcr.io/rancher/elemental-toolkit/elemental-cli:latest AS toolkit
@@ -21,7 +21,6 @@ RUN ARCH=$(uname -m); \
         ADD_PKGS+=" shim"; \
         [ "${ARCH}" = "aarch64" ] && ARCH="arm64"; \
     fi; \
-    zypper --non-interactive removerepo repo-update || true; \
     zypper --non-interactive --gpg-auto-import-keys install --no-recommends -- \
         ${ADD_PKGS} \
         audit \
