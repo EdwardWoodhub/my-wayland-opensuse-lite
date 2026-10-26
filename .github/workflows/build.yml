@@ -1,11 +1,11 @@
-name: Build Elemental OS Image and ISO
+name: Build LXQt OS Based On openSUSE and Publish ISO
 
 on:
   push:
     branches: [ "main" ]
   schedule:
-    # 每天 UTC 20:00 (北京时间次日凌晨 4:00) 定时触发
-    - cron: '0 20 * * *'
+    # 每天 UTC 19:03 (北京时间次日凌晨 3:03) 定时触发
+    - cron: '03 19 * * *'
   workflow_dispatch:
 
 env:
@@ -15,7 +15,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write       # 创建 Release 及上传大文件附件必需权限
       packages: write       # 推送 GHCR 容器镜像必需权限
