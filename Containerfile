@@ -23,60 +23,83 @@ RUN ARCH=$(uname -m); \
     fi; \
     zypper --non-interactive removerepo repo-update || true; \
     zypper --non-interactive --gpg-auto-import-keys install --no-recommends -- \
-        kernel-default \
+        ${ADD_PKGS} \
+        audit \
+        btop \
+        btrfsmaintenance \
+        btrfsprogs \
+        curl \
         device-mapper \
+        dosfstools \
         dracut \
+        e2fsprogs \
+        fastfetch \
+        featherpad \
+        findutils \
+        fontconfig \
+        gedit \
+        gptfdisk \
+        grim \
         grub2 \
         grub2-${ARCH}-efi \
-        haveged \
-        systemd \
-        NetworkManager \
-        openssh-server \
-        openssh-clients \
-        timezone \
-        parted \
-        e2fsprogs \
-        dosfstools \
-        mtools \
-        xorriso \
-        findutils \
-        gptfdisk \
-        rsync \
-        squashfs \
-        lvm2 \
-        tar \
         gzip \
-        vim \
-        which \
-        less \
-        sudo \
-        curl \
-        sed \
-        iproute2 \
-        podman \
-        audit \
-        patterns-microos-selinux \
-        btrfsprogs \
-        btrfsmaintenance \
-        snapper \
-        xterm-resize \
+        haveged \
         htop \
-        ${ADD_PKGS} \
-        # --- LXQt + labwc 桌面组件 (RPM 包名) --- \
-        patterns-lxqt-lxqt \
+        htop \
+        iproute2 \
+        kanshi \
+        kate \
+        kernel-default \
+        konsole \
         labwc \
+        less \
+        lvm2 \
+        lxqt-labwc-session \
         lxqt-session \
         lxqt-wayland-session \
-        sddm \
-        wlr-randr \
-        wdisplays \
-        wl-clipboard \
-        xwayland \
-        # --- 图形驱动与中文矢量字体 --- \
+        meld \
         Mesa \
         Mesa-dri \
-        noto-sans-cjk-fonts && \
-    zypper clean --all
+        mtools \
+        NetworkManager \
+        noto-sans-cjk-fonts \
+        openssh-clients \
+        openssh-server \
+        open-vm-tools \
+        open-vm-tools-desktop \
+        parted \
+        patterns-lxqt-lxqt \
+        patterns-microos-selinux \
+        podman \
+        python3 \
+        qt6-wayland \
+        qterminal \
+        rsync \
+        screengrab \
+        sddm \
+        sed \
+        slurp \
+        snapper \
+        squashfs \
+        sudo \
+        syncthing \
+        systemd \
+        tar \
+        tilix \
+        timezone \
+        uv \
+        vim \
+        wdisplays \
+        wdisplays \
+        which \
+        wl-clipboard \
+        wlr-randr \
+        wqy-microhei-fonts \
+        xorriso \
+        xterm-resize \
+        xwayland && \
+fc-cache -f && \    
+zypper clean --all
 
 # 2. 注入 elemental 二进制工具及专用的 dracut 模块
 COPY --from=toolkit /usr/bin/elemental /usr/bin/elemental
