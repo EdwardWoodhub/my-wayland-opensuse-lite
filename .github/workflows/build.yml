@@ -83,16 +83,18 @@ jobs:
         run: |
           mkdir -p build-output release-assets
           
-          # 打包完整 ISO
-          docker run --rm -v $(pwd)/build-output:/build \
-            ghcr.io/rancher/elemental-toolkit/elemental-cli:latest \
-            --debug build-iso \
+          # 打包完整 ISO (使用自建镜像自举打包)
+          docker run --rm -v $(pwd)/build-output:/build --privileged \
+            ${{ env.FULL_IMAGE_NAME }}:${{ env.RELEASE_TAG }} \
+            elemental --debug build-iso \
             --name ${{ env.CURRENT_ISO_NAME }} \
             --bootloader-in-rootfs \
             -o /build \
             docker:${{ env.FULL_IMAGE_NAME }}:${{ env.RELEASE_TAG }}
 
           ISO_PATH="build-output/${{ env.CURRENT_ISO_NAME }}.iso"
+          
+          
           
           # 计算 ISO 真实字节大小与阈值 (1.5GB = 1572864000 字节)
           FILE_SIZE=$(stat -c%s "${ISO_PATH}")
