@@ -28,11 +28,13 @@ RUN ARCH=$(uname -m); \
     fi; \
     zypper --non-interactive --gpg-auto-import-keys install --no-recommends -- \
         ${ADD_PKGS} \
+        at-spi2-core \
         audit \
         btop \
         btrfsmaintenance \
         btrfsprogs \
         curl \
+        dbus-1-tools \
         device-mapper \
         dosfstools \
         dracut \
@@ -43,10 +45,12 @@ RUN ARCH=$(uname -m); \
         findutils \
         fontconfig \
         gedit \
+        glib2-tools \
         gptfdisk \
         grim \
         grub2 \
         grub2-${ARCH}-efi \
+        gsettings-desktop-schemas \
         gzip \
         haveged \
         htop \
